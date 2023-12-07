@@ -2,6 +2,7 @@
 
 namespace aes.Models.Racuni.Elektra
 {
+    // TODO: remove edit model
     public class RacunElektraRateEdit
     {
         public int Id { get; set; }

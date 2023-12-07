@@ -2,6 +2,7 @@
 
 namespace aes.Models.Racuni.Holding
 {
+    // TODO: remove edit model
     public class RacunHoldingEdit
     {
         public int Id { get; set; }
