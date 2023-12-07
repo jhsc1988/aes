@@ -13,7 +13,9 @@ namespace aes.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20211213084707_edits")]
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     partial class edits
+#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

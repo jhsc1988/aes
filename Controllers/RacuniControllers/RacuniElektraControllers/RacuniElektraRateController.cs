@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
 {
@@ -79,7 +83,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
                 racunElektraRate.VrijemeUnosa = DateTime.Now;
                 await _c.UnitOfWork.RacuniElektraRate.Add(racunElektraRate);
                 _ = await _c.UnitOfWork.Complete();
-                RedirectToAction(nameof(Index));
+                _ = RedirectToAction(nameof(Index));
             }
         }
 
@@ -231,9 +235,9 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
             }
 
             RacunElektraRate db = await _c.UnitOfWork.RacuniElektraRate.FindExact(x => x.BrojRacuna.Equals(brojRacuna));
-            return racunElektraRateEdit != null && (db != null && db.IsItTemp != true &&
+            return racunElektraRateEdit != null && db != null && db.IsItTemp != true &&
                                                     !racunElektraRateEdit.RacunElektraRate.BrojRacuna
-                                                        .Equals(brojRacuna))
+                                                        .Equals(brojRacuna)
                 ? Json($"Račun {brojRacuna} već postoji.")
                 : Json(true);
         }
@@ -303,7 +307,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
 
             return await _racuniElektraRateTempCreateService.CheckTempTableForRacuniWithousElectraCustomer(
                 _c.Service.GetUid(User)) != 0
-                ? (new(new { success = false, Message = "U tablici postoje računi bez kupca!" }))
+                ? new(new { success = false, Message = "U tablici postoje računi bez kupca!" })
                 : await _c.RacuniTempEditorService.SaveToDb<RacunElektraRate>(
                     await _c.UnitOfWork.RacuniElektraRate.Find(e =>
                         e.IsItTemp == true && e.CreatedByUserId.Equals(_c.Service.GetUid(User))), dopisId);
@@ -350,7 +354,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
         [HttpPost]
         public async Task<JsonResult> AddNewTemp(string brojRacuna, string iznos, string date)
         {
-            var declaringType = System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType;
+            Type declaringType = System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType;
             if (declaringType != null)
             {
                 if (User.Identity != null)

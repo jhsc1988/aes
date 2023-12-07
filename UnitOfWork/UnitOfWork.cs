@@ -1,6 +1,4 @@
-﻿using aes.aes.Repositories.RacuniRepositories.Elektra;
-using aes.aes.Repositories.RacuniRepositories.IRacuniRepository.Elektra;
-using aes.Data;
+﻿using aes.Data;
 using aes.Repositories;
 using aes.Repositories.HEP.Elektra;
 using aes.Repositories.HEP.ODS;
@@ -11,9 +9,8 @@ using aes.Repositories.RacuniRepositories.Elektra;
 using aes.Repositories.RacuniRepositories.IRacuniRepository;
 using aes.Repositories.RacuniRepositories.IRacuniRepository.Elektra;
 using aes.Repositories.Stan;
-using aes.Repository.IRepository;
-using aes.Repository.IRepository.HEP;
-using aes.Repository.RacuniRepositories.IRacuniRepository.Elektra;
+using System;
+using System.Threading.Tasks;
 
 namespace aes.UnitOfWork
 {

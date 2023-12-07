@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace aes.Controllers.RacuniControllers
 {
@@ -73,8 +77,8 @@ namespace aes.Controllers.RacuniControllers
             {
                 racunHolding.VrijemeUnosa = DateTime.Now;
                 await _c.UnitOfWork.RacuniHolding.Add(racunHolding);
-                _ = _c.UnitOfWork.Complete(); 
-                RedirectToAction(nameof(Index));
+                _ = _c.UnitOfWork.Complete();
+                _ = RedirectToAction(nameof(Index));
             }
             ViewData["DopisId"] = new SelectList(await _c.UnitOfWork.Dopis.GetAll(), "Id", "Urbroj", racunHolding.DopisId);
             ViewData["StanId"] = new SelectList(await _c.UnitOfWork.Stan.GetAll(), "Id", "Adresa", racunHolding.StanId);
@@ -219,7 +223,7 @@ namespace aes.Controllers.RacuniControllers
             }
 
             RacunHolding db = await _c.UnitOfWork.RacuniHolding.FindExact(x => x.BrojRacuna.Equals(brojRacuna));
-            return racunHoldingEdit != null && (db != null && db.IsItTemp != true && !racunHoldingEdit.RacunHolding.BrojRacuna.Equals(brojRacuna)) ? Json($"Račun {brojRacuna} već postoji.") : Json(true);
+            return racunHoldingEdit != null && db != null && db.IsItTemp != true && !racunHoldingEdit.RacunHolding.BrojRacuna.Equals(brojRacuna) ? Json($"Račun {brojRacuna} već postoji.") : Json(true);
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,13 +279,13 @@ namespace aes.Controllers.RacuniControllers
         public async Task<JsonResult> SaveToDB(string dopisId)
         {
             return (await _c.UnitOfWork.RacuniHolding.TempList(_c.Service.GetUid(User))).Count() is 0
-                ? (new(new
+                ? new(new
                 {
                     success = false,
                     Message = "U tablici nema podataka"
-                }))
+                })
                 : await _racuniHoldingTempCreateService.CheckTempTableForRacuniWithouCustomer(_c.Service.GetUid(User)) != 0
-                ? (new(new { success = false, Message = "U tablici postoje računi bez kupca!" }))
+                ? new(new { success = false, Message = "U tablici postoje računi bez kupca!" })
                 : await _c.RacuniTempEditorService.SaveToDb<RacunHolding>(await _c.UnitOfWork.RacuniHolding.Find(e => e.IsItTemp == true && e.CreatedByUserId.Equals(_c.Service.GetUid(User))), dopisId);
         }
 
@@ -323,7 +327,7 @@ namespace aes.Controllers.RacuniControllers
         [HttpPost]
         public async Task<JsonResult> AddNewTemp(string brojRacuna, string iznos, string date)
         {
-            var declaringType = System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType;
+            Type declaringType = System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType;
             if (declaringType != null)
             {
                 if (User.Identity != null)
