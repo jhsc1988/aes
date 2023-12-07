@@ -114,7 +114,7 @@
             },
             {
                 "targets": 8, // Iznos
-                "render": $.fn.dataTable.render.number('.', ',', 2, '', ' kn'),
+                "render": $.fn.dataTable.render.number('.', ',', 2, '', ' €'),
             },
             {
                 "targets": 9, // Napomena

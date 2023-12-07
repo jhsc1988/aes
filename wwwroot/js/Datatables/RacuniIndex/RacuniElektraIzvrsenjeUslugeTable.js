@@ -111,7 +111,7 @@ $(document).ready(function () {
                 "render": $.fn.dataTable.render.ellipsis(30),
             }, {
                 "targets": 7, // Iznos
-                "render": $.fn.dataTable.render.number('.', ',', 2, '', ' kn'),
+                "render": $.fn.dataTable.render.number('.', ',', 2, '', ' €'),
             },
             {
                 "targets": 8, // KlasaPlacanja
