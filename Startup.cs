@@ -11,7 +11,6 @@ using aes.Services.RacuniServices.Elektra.RacuniElektraIzvrsenjeUsluge;
 using aes.Services.RacuniServices.Elektra.RacuniElektraIzvrsenjeUsluge.Is;
 using aes.Services.RacuniServices.Elektra.RacuniElektraRate;
 using aes.Services.RacuniServices.Elektra.RacuniElektraRate.Is;
-using aes.Services.RacuniServices.IRacuniService;
 using aes.Services.RacuniServices.IServices;
 using aes.Services.RacuniServices.RacuniHoldingService;
 using aes.Services.RacuniServices.RacuniHoldingService.IService;
@@ -28,6 +27,8 @@ using System.Globalization;
 using aes.UnitOfWork;
 using aes.Repositories.Stan;
 using aes.Repositories.IRepository;
+using aes.Services.RacuniServices.IServices.IRacuniService;
+using System.Threading.Tasks;
 
 namespace aes
 {
@@ -45,67 +46,67 @@ namespace aes
         {
             RegisterServices(services);
 
-            services.AddDbContext<ApplicationDbContext>(options =>
+            _ = services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection") ?? string.Empty));
 
-            services.AddDatabaseDeveloperPageExceptionFilter();
+            _ = services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            _ = services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-            services.AddControllersWithViews();
-            services.AddApplicationInsightsTelemetry();
+            _ = services.AddControllersWithViews();
+            _ = services.AddApplicationInsightsTelemetry();
         }
 
         private static void RegisterServices(IServiceCollection services)
         {
             // unit of work
-            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+            _ = services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
             // datatables
-            services.AddScoped<IDatatablesSearch, DatatablesSearch>();
-            services.AddScoped<IDatatablesGenerator, DatatablesGenerator>();
-            services.AddScoped<IRacuniInlineEditorService, RacuniInlineEditorService>();
+            _ = services.AddScoped<IDatatablesSearch, DatatablesSearch>();
+            _ = services.AddScoped<IDatatablesGenerator, DatatablesGenerator>();
+            _ = services.AddScoped<IRacuniInlineEditorService, RacuniInlineEditorService>();
 
             // Racuni services
-            services.AddScoped<IRacuniHoldingService, RacuniHoldingService>();
+            _ = services.AddScoped<IRacuniHoldingService, RacuniHoldingService>();
 
             // Racuni elektra services
-            services.AddScoped<IRacuniElektraService, RacuniElektraService>();
-            services.AddScoped<IRacuniElektraRateService, RacuniElektraRateService>();
-            services.AddScoped<IRacuniElektraIzvrsenjeUslugeService, RacuniElektraIzvrsenjeUslugeService>();
+            _ = services.AddScoped<IRacuniElektraService, RacuniElektraService>();
+            _ = services.AddScoped<IRacuniElektraRateService, RacuniElektraRateService>();
+            _ = services.AddScoped<IRacuniElektraIzvrsenjeUslugeService, RacuniElektraIzvrsenjeUslugeService>();
 
             // Racuni temp create
-            services.AddScoped<IRacuniHoldingTempCreateService, RacuniHoldingTempCreateService>();
-            services.AddScoped<IRacuniElektraRateTempCreateService, RacuniElektraRateTempCreateService>();
-            services.AddScoped<IRacuniElektraTempCreateService, RacuniElektraTempCreateService>();
-            services.AddScoped<IRacuniTempEditorService, RacuniTempEditorService>();
-            services
+            _ = services.AddScoped<IRacuniHoldingTempCreateService, RacuniHoldingTempCreateService>();
+            _ = services.AddScoped<IRacuniElektraRateTempCreateService, RacuniElektraRateTempCreateService>();
+            _ = services.AddScoped<IRacuniElektraTempCreateService, RacuniElektraTempCreateService>();
+            _ = services.AddScoped<IRacuniTempEditorService, RacuniTempEditorService>();
+            _ = services
                 .AddScoped<IRacuniElektraIzvrsenjeUslugeTempCreateService,
                     RacuniElektraIzvrsenjeUslugeTempCreateService>();
 
             // Racuni upload services
-            services.AddScoped<IRacuniElektraUploadService, RacuniElektraUploadService>();
-            services.AddScoped<IRacuniElektraRateUploadService, RacuniElektraRateUploadService>();
-            services.AddScoped<IRacuniHoldingUploadService, RacuniHoldingUploadService>();
+            _ = services.AddScoped<IRacuniElektraUploadService, RacuniElektraUploadService>();
+            _ = services.AddScoped<IRacuniElektraRateUploadService, RacuniElektraRateUploadService>();
+            _ = services.AddScoped<IRacuniHoldingUploadService, RacuniHoldingUploadService>();
 
             // Racuni common services
-            services.AddScoped<IRacuniCheckService, RacuniCheckService>();
+            _ = services.AddScoped<IRacuniCheckService, RacuniCheckService>();
 
             // other services
-            services.AddScoped<IPredmetiervice, PredmetiService>();
-            services.AddScoped<IService, Service>();
-            services.AddScoped<IDopisiService, DopisiService>();
-            services.AddScoped<IOdsService, OdsService>();
-            services.AddScoped<IStanUploadService, StanUploadService>();
-            services.AddScoped<IStanUpdateRepository, StanUpdateRepository>();
+            _ = services.AddScoped<IPredmetiervice, PredmetiService>();
+            _ = services.AddScoped<IService, Service>();
+            _ = services.AddScoped<IDopisiService, DopisiService>();
+            _ = services.AddScoped<IOdsService, OdsService>();
+            _ = services.AddScoped<IStanUploadService, StanUploadService>();
+            _ = services.AddScoped<IStanUpdateRepository, StanUpdateRepository>();
 
             // serilog logger
-            services.AddSingleton(Log.Logger);
+            _ = services.AddSingleton(Log.Logger);
 
             // common dependecies
-            services.AddScoped<ICommonDependencies, CommonDependencies>();
-            services.AddScoped<IRacuniCommonDependecies, RacuniCommonDependecies>();
+            _ = services.AddScoped<ICommonDependencies, CommonDependencies>();
+            _ = services.AddScoped<IRacuniCommonDependecies, RacuniCommonDependecies>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -117,38 +118,38 @@ namespace aes
 
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseMigrationsEndPoint();
+                _ = app.UseDeveloperExceptionPage();
+                _ = app.UseMigrationsEndPoint();
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                _ = app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                _ = app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            _ = app.UseHttpsRedirection();
+            _ = app.UseStaticFiles();
 
-            app.UseRouting();
+            _ = app.UseRouting();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            _ = app.UseAuthentication();
+            _ = app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
+            _ = app.UseEndpoints(endpoints =>
             {
                 // disable registration
-                endpoints.MapGet("/Identity/Account/Register",
+                _ = endpoints.MapGet("/Identity/Account/Register",
                     context => Task.Factory.StartNew(() =>
                         context.Response.Redirect("/Identity/Account/Login", true, true)));
-                endpoints.MapPost("/Identity/Account/Register",
+                _ = endpoints.MapPost("/Identity/Account/Register",
                     context => Task.Factory.StartNew(() =>
                         context.Response.Redirect("/Identity/Account/Login", true, true)));
 
-                endpoints.MapControllerRoute(
+                _ = endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Stanovi}/{action=Index}/{id?}");
-                endpoints.MapRazorPages();
+                _ = endpoints.MapRazorPages();
             });
         }
     }

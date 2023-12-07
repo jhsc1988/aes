@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
 
 namespace aes.Models.Datatables
@@ -8,11 +10,11 @@ namespace aes.Models.Datatables
     {
         public DtParams GetParams(HttpRequest request)
         {
-            var form = request.Form;
+            IFormCollection form = request.Form;
 
-            var startStr = form["start"].FirstOrDefault();
-            var lengthStr = form["length"].FirstOrDefault();
-            var sortColumnIndex = form["order[0][column]"].FirstOrDefault();
+            string startStr = form["start"].FirstOrDefault();
+            string lengthStr = form["length"].FirstOrDefault();
+            string sortColumnIndex = form["order[0][column]"].FirstOrDefault();
 
             if (int.TryParse(startStr, out int start) && int.TryParse(lengthStr, out int length))
             {
@@ -33,12 +35,12 @@ namespace aes.Models.Datatables
         public JsonResult SortingPaging<T>(IEnumerable<T> data, DtParams Params, HttpRequest request, int totalRows,
             int totalRowsAfterFiltering)
         {
-            var queryableData = data as IQueryable<T> ?? data.AsQueryable();
+            IQueryable<T> queryableData = data as IQueryable<T> ?? data.AsQueryable();
 
-            var sortedData = queryableData.OrderBy($"{Params.SortColumnName} {Params.SortDirection}");
-            var pagedData = sortedData.Skip(Params.Start).Take(Params.Length);
+            IOrderedQueryable<T> sortedData = queryableData.OrderBy($"{Params.SortColumnName} {Params.SortDirection}");
+            IQueryable<T> pagedData = sortedData.Skip(Params.Start).Take(Params.Length);
 
-            var draw = int.TryParse(request.Form["draw"].FirstOrDefault(), out var drawInt) ? drawInt : 0;
+            int draw = int.TryParse(request.Form["draw"].FirstOrDefault(), out int drawInt) ? drawInt : 0;
 
             return new JsonResult(new
             {

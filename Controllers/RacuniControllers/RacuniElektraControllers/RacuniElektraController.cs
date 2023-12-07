@@ -1,5 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using aes.CommonDependecies.ICommonDependencies;
 using aes.Controllers.IControllers;
 using aes.Data;
@@ -279,8 +283,8 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
             }
 
             RacunElektra db = await _c.UnitOfWork.RacuniElektra.FindExact(x => x.BrojRacuna.Equals(brojRacuna));
-            return racunElektraEdit != null && (db != null && db.IsItTemp != true &&
-                                                !racunElektraEdit.RacunElektra.BrojRacuna.Equals(brojRacuna))
+            return racunElektraEdit != null && db != null && db.IsItTemp != true &&
+                                                !racunElektraEdit.RacunElektra.BrojRacuna.Equals(brojRacuna)
                 ? Json($"Račun {brojRacuna} već postoji.")
                 : Json(true);
         }
@@ -349,7 +353,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
 
             return await _racuniElektraTempCreateService.CheckTempTableForRacuniWithousElektraKupac(
                 _c.Service.GetUid(User)) != 0
-                ? (new(new { success = false, Message = "U tablici postoje računi bez kupca!" }))
+                ? new(new { success = false, Message = "U tablici postoje računi bez kupca!" })
                 : await _c.RacuniTempEditorService.SaveToDb<RacunElektra>(await _c.UnitOfWork.RacuniElektra
                     .Find(e => e.IsItTemp == true && e.CreatedByUserId.Equals(_c.Service.GetUid(User))), dopisId);
         }
@@ -395,7 +399,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
         [HttpPost]
         public async Task<JsonResult> AddNewTemp(string brojRacuna, string iznos, string date)
         {
-            var declaringType = System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType;
+            Type declaringType = System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType;
             if (declaringType != null)
             {
                 if (User.Identity != null)
@@ -469,7 +473,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
             {
                 _ = _context.Add(obracunPotrosnje);
                 _ = await _context.SaveChangesAsync();
-                RedirectToAction("Details", new { id = obracunPotrosnje.RacunElektraId });
+                _ = RedirectToAction("Details", new { id = obracunPotrosnje.RacunElektraId });
             }
 
             ViewData["RacunElektraId"] =

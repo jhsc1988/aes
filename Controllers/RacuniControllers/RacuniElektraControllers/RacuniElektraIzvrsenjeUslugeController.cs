@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
 {
@@ -76,7 +80,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
                 racunElektraIzvrsenjeUsluge.VrijemeUnosa = DateTime.Now;
                 await _c.UnitOfWork.RacuniElektraIzvrsenjeUsluge.Add(racunElektraIzvrsenjeUsluge);
                 _ = await _c.UnitOfWork.Complete();
-                RedirectToAction(nameof(Index));
+                _ = RedirectToAction(nameof(Index));
             }
 
             ViewData["DopisId"] = new SelectList(await _c.UnitOfWork.Dopis.GetAll(), "Id", "Urbroj",
@@ -240,9 +244,9 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
 
             RacunElektraIzvrsenjeUsluge db =
                 await _c.UnitOfWork.RacuniElektraIzvrsenjeUsluge.FindExact(x => x.BrojRacuna.Equals(brojRacuna));
-            return racunElektraUslugeEdit != null && (db != null && db.IsItTemp != true &&
+            return racunElektraUslugeEdit != null && db != null && db.IsItTemp != true &&
                                                       !racunElektraUslugeEdit.RacunElektraIzvrsenjeUsluge.BrojRacuna
-                                                          .Equals(brojRacuna))
+                                                          .Equals(brojRacuna)
                 ? Json($"Račun {brojRacuna} već postoji.")
                 : Json(true);
         }
@@ -297,7 +301,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
 
             return await _racuniElektraIzvrsenjeUslugeTempCreateService.CheckTempTableForRacuniWithousElectraCustomer(
                 _c.Service.GetUid(User)) != 0
-                ? (new(new { success = false, Message = "U tablici postoje računi bez kupca!" }))
+                ? new(new { success = false, Message = "U tablici postoje računi bez kupca!" })
                 : await _c.RacuniTempEditorService.SaveToDb<RacunElektraIzvrsenjeUsluge>(await _c.UnitOfWork
                     .RacuniElektraIzvrsenjeUsluge
                     .Find(e => e.IsItTemp == true && e.CreatedByUserId.Equals(_c.Service.GetUid(User))), dopisId);
@@ -346,7 +350,7 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
         public async Task<JsonResult> AddNewTemp(string brojRacuna, string iznos, string date, string datumIzvrsenja,
             string usluga, string dopisId)
         {
-            var declaringType = System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType;
+            Type declaringType = System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType;
             if (declaringType != null)
             {
                 if (User.Identity != null)
