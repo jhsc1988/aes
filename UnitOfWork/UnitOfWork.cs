@@ -19,13 +19,9 @@ namespace aes.UnitOfWork
         private readonly ApplicationDbContext _context;
 
         public IRacuniElektraRepository RacuniElektra { get; private set; }
-        public IRacuniElektraEditRepository RacuniElektraEdit { get; private set; }
         public IRacuniElektraRateRepository RacuniElektraRate { get; private set; }
-        public IRacuniElektraRateEditRepository RacuniElektraRateEdit { get; private set; }
         public IRacuniElektraIzvrsenjeUslugeRepository RacuniElektraIzvrsenjeUsluge { get; private set; }
-        public IRacuniElektraIzvrsenjeUslugeEditRepository RacuniElektraIzvrsenjeUslugeEdit { get; private set; }
         public IRacuniHoldingRepository RacuniHolding { get; private set; }
-        public IRacuniHoldingEditRepository RacuniHoldingEdit { get; private set; }
         public IElektraKupacRepository ElektraKupac { get; private set; }
         public IStanRepository Stan { get; private set; }
         public IOdsRepository Ods { get; private set; }
@@ -49,10 +45,6 @@ namespace aes.UnitOfWork
             Predmet = new PredmetRepository(_context);
             Dopis = new DopisRepository(_context);
             StanUpdate = new StanUpdateRepository(_context);
-            RacuniHoldingEdit = new RacuniHoldingEditRepository(_context);
-            RacuniElektraEdit = new RacuniElektraEditRepository(_context);
-            RacuniElektraRateEdit = new RacuniElektraRateEditRepository(_context);
-            RacuniElektraIzvrsenjeUslugeEdit = new RacuniElektraIzvrsenjeUslugeEditRepository(_context);
             ObracunPotrosnje = new ObracunPotrosnjeRepository(_context);
             OdsEdit = new OdsEditRepository(_context);
             ElektraKupacEdit = new ElektraKupacEditRepository(_context);

@@ -101,25 +101,6 @@ namespace aes.Controllers.RacuniControllers
                 return NotFound();
             }
 
-            try
-            {
-
-                RacunHoldingEdit racunHoldingEdit = new()
-                {
-                    RacunHolding = racunHolding,
-                    RacunHoldingId = racunHolding.Id,
-                    EditingByUserId = _c.Service.GetUid(User),
-                    EditTime = DateTime.Now,
-                };
-
-                await _c.UnitOfWork.RacuniHoldingEdit.Add(racunHoldingEdit);
-                _ = await _c.UnitOfWork.Complete();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
             ViewData["DopisId"] = new SelectList(await _c.UnitOfWork.Dopis.GetAll(), "Id", "Urbroj", racunHolding.DopisId);
             ViewData["StanId"] = new SelectList(await _c.UnitOfWork.Stan.GetAll(), "Id", "Adresa", racunHolding.StanId);
             return View(racunHolding);
@@ -157,7 +138,6 @@ namespace aes.Controllers.RacuniControllers
                 }
                 finally
                 {
-                    _c.UnitOfWork.RacuniHoldingEdit.RemoveRange(await _c.UnitOfWork.RacuniHoldingEdit.Find(e => e.EditingByUserId.Equals(_c.Service.GetUid(User))));
                     _ = await _c.UnitOfWork.Complete();
                 }
 
@@ -206,24 +186,14 @@ namespace aes.Controllers.RacuniControllers
         [HttpGet]
         public async Task<IActionResult> BrojRacunaValidation(string brojRacuna)
         {
-            RacunHoldingEdit racunHoldingEdit = await _c.UnitOfWork.RacuniHoldingEdit.GetLastRacunHoldingEdit(_c.Service.GetUid(User));
 
-            if (brojRacuna.Length is not 20
+            return brojRacuna.Length is not 20
                 || brojRacuna[8] is not '-'
                 || brojRacuna[18] is not '-'
                 || !int.TryParse(brojRacuna.AsSpan(9, 9), out _)
-                || !int.TryParse(brojRacuna.AsSpan(19, 1), out _))
-            {
-                return Json($"Broj računa nije ispravan");
-            }
-
-            if (racunHoldingEdit != null && brojRacuna.Length >= 8 && !brojRacuna[..8].Equals(racunHoldingEdit.RacunHolding.BrojRacuna[..8]))
-            {
-                return Json($"Šifra objekta unutar broja računa ne smije se razlikovati");
-            }
-
-            RacunHolding db = await _c.UnitOfWork.RacuniHolding.FindExact(x => x.BrojRacuna.Equals(brojRacuna));
-            return racunHoldingEdit != null && db != null && db.IsItTemp != true && !racunHoldingEdit.RacunHolding.BrojRacuna.Equals(brojRacuna) ? Json($"Račun {brojRacuna} već postoji.") : Json(true);
+                || !int.TryParse(brojRacuna.AsSpan(19, 1), out _)
+                ? Json($"Broj računa nije ispravan")
+                : (IActionResult)Json(true);
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -150,26 +150,8 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
                 return NotFound();
             }
 
-            try
-            {
-                RacunElektraEdit racunElektraEdit = new()
-                {
-                    RacunElektra = racunElektra,
-                    RacunElektraId = racunElektra.Id,
-                    EditingByUserId = _c.Service.GetUid(User),
-                    EditTime = DateTime.Now,
-                };
-
-                await _c.UnitOfWork.RacuniElektraEdit.Add(racunElektraEdit);
-                _ = await _c.UnitOfWork.Complete();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
             ViewData["DopisId"] =
-                new SelectList(await _c.UnitOfWork.Dopis.GetAll(), "Id", "Urbroj", racunElektra.DopisId);
+     new SelectList(await _c.UnitOfWork.Dopis.GetAll(), "Id", "Urbroj", racunElektra.DopisId);
             ViewData["ElektraKupacId"] = new SelectList(await _c.UnitOfWork.ElektraKupac.GetAll(), "Id", "Id",
                 racunElektra.ElektraKupacId);
 
@@ -212,9 +194,6 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
                 }
                 finally
                 {
-                    _c.UnitOfWork.RacuniElektraEdit.RemoveRange(
-                        await _c.UnitOfWork.RacuniElektraEdit.Find(e =>
-                            e.EditingByUserId.Equals(_c.Service.GetUid(User))));
                     _ = await _c.UnitOfWork.Complete();
                 }
 
@@ -264,28 +243,13 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
         [HttpGet]
         public async Task<JsonResult> BrojRacunaValidation(string brojRacuna)
         {
-            RacunElektraEdit racunElektraEdit =
-                await _c.UnitOfWork.RacuniElektraEdit.GetLastRacunElektraEdit(_c.Service.GetUid(User));
 
-            if (brojRacuna.Length is not 19
+            return brojRacuna.Length is not 19
                 || brojRacuna[10] is not '-'
                 || brojRacuna[17] is not '-'
                 || !int.TryParse(brojRacuna.AsSpan(11, 6), out _)
-                || !int.TryParse(brojRacuna.AsSpan(18, 1), out _))
-            {
-                return Json($"Broj računa nije ispravan");
-            }
-
-            if (racunElektraEdit != null && brojRacuna.Length >= 10 &&
-                !brojRacuna[..10].Equals(racunElektraEdit.RacunElektra.BrojRacuna[..10]))
-            {
-                return Json($"Ugovorni račun unutar broja računa ne smije se razlikovati");
-            }
-
-            RacunElektra db = await _c.UnitOfWork.RacuniElektra.FindExact(x => x.BrojRacuna.Equals(brojRacuna));
-            return racunElektraEdit != null && db != null && db.IsItTemp != true &&
-                                                !racunElektraEdit.RacunElektra.BrojRacuna.Equals(brojRacuna)
-                ? Json($"Račun {brojRacuna} već postoji.")
+                || !int.TryParse(brojRacuna.AsSpan(18, 1), out _)
+                ? Json($"Broj računa nije ispravan")
                 : Json(true);
         }
 

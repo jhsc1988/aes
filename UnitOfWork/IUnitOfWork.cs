@@ -19,10 +19,6 @@ namespace aes.UnitOfWork
         IDopisRepository Dopis { get; }
         IElektraKupacRepository ElektraKupac { get; }
         IStanUpdateRepository StanUpdate { get; }
-        IRacuniHoldingEditRepository RacuniHoldingEdit { get; }
-        IRacuniElektraEditRepository RacuniElektraEdit { get; }
-        IRacuniElektraRateEditRepository RacuniElektraRateEdit { get; }
-        IRacuniElektraIzvrsenjeUslugeEditRepository RacuniElektraIzvrsenjeUslugeEdit { get; }
         IObracunPotrosnjeRepository ObracunPotrosnje { get; }
         IOdsEditRepository OdsEdit { get; }
         IElektraKupacEditRepository ElektraKupacEdit { get; }
