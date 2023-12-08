@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System;
 using System.IO;
 using OfficeOpenXml;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace aes.Services
 {
@@ -34,6 +36,7 @@ namespace aes.Services
             }
 
             IFormFileCollection files;
+
             try
             {
                 files = request.Form.Files;
@@ -64,30 +67,24 @@ namespace aes.Services
                         message1
                     });
                 }
+
                 try
                 {
                     // Process the XLSX file
                     using MemoryStream stream = new();
                     await file.CopyToAsync(stream);
                     using ExcelPackage package = new(stream);
+
                     ExcelWorksheet worksheet = package.Workbook.Worksheets["StambenoUpravljanje"];
                     int rowCount = worksheet.Dimension.Rows;
+
                     DateTime dateTimeOfData = new();
                     NumberStyles style = NumberStyles.Number;
                     CultureInfo culture = CultureInfo.CreateSpecificCulture("en-EN");
 
-                    for (int row = 12; row <= rowCount; row++)
-                    {
-                        if (!worksheet.Cells[row, 2].Text.Equals("Stanje podataka: "))
-                        {
-                            continue;
-                        }
-
-
-
-                        double oaDateValue = worksheet.Cells[row, 5].GetValue<double>();
-                        dateTimeOfData = DateTime.FromOADate(oaDateValue);
-                    }
+                    // Get "Stanje podataka: " date
+                    double oaDateValue = worksheet.Cells[12, 5].GetValue<double>();
+                    dateTimeOfData = DateTime.FromOADate(oaDateValue);
 
                     StanUpdate stanUpdate = new()
                     {
@@ -98,16 +95,19 @@ namespace aes.Services
                     await _unitOfWork.StanUpdate.Add(stanUpdate);
                     _ = await _unitOfWork.Complete();
 
+                    IEnumerable<Stan> allStanovi = await _unitOfWork.Stan.GetAll();
+                    Dictionary<int, Stan> stanoviDictionary = allStanovi.ToDictionary(stan => stan.StanId);
+
+                    List<Stan> stanoviZaUpdate = new();
+                    List<Stan> stanoviZaAdd = new();
+
                     for (int row = 14; row <= rowCount; row++)
                     {
                         try
                         {
-                            int p = int.Parse(worksheet.Cells[row, 3].Text);
-                            Console.WriteLine(p.ToString());
+                            int stanId = int.Parse(worksheet.Cells[row, 3].Text);
 
-                            Stan stan = await _unitOfWork.Stan.FindExact(e => e.StanId == int.Parse(worksheet.Cells[row, 3].Text));
-
-                            if (stan != null)
+                            if (stanoviDictionary.TryGetValue(stanId, out Stan stan))
                             {
                                 stan.SifraObjekta = int.Parse(worksheet.Cells[row, 4].Text);
                                 stan.Vrsta = worksheet.Cells[row, 5].Text;
@@ -123,7 +123,7 @@ namespace aes.Services
                                 stan.DioNekretnine = worksheet.Cells[row, 15].Text;
                                 stan.Sektor = worksheet.Cells[row, 16].Text;
                                 stan.Status = worksheet.Cells[row, 17].Text;
-                                _ = await _unitOfWork.Stan.Update(stan);
+                                stanoviZaUpdate.Add(stan);
                             }
                             else
                             {
@@ -145,10 +145,7 @@ namespace aes.Services
                                     Status = worksheet.Cells[row, 17].Text,
                                 };
 
-                                await _unitOfWork.Stan.Add(newStan);
-                                _ = await _unitOfWork.Complete();
-
-                                //_logger.Information(loggerTemplate + "Added: " + newStan.StanId);
+                                stanoviZaAdd.Add(newStan);
                             }
 
                         }
@@ -160,6 +157,19 @@ namespace aes.Services
                             _ = await _unitOfWork.StanUpdate.Update(stanUpdate);
                         }
                     }
+
+                    if (stanoviZaUpdate.Count != 0)
+                    {
+                        await _unitOfWork.Stan.UpdateRange(stanoviZaUpdate);
+                    }
+
+                    if (stanoviZaAdd.Count != 0)
+                    {
+                        await _unitOfWork.Stan.AddRange(stanoviZaAdd);
+                    }
+
+                    _ = await _unitOfWork.Complete();
+
                     stanUpdate.UpdateEnded = DateTime.Now;
                     stanUpdate.UpdateComplete = true;
                     stanUpdate.DateOfData = dateTimeOfData;
