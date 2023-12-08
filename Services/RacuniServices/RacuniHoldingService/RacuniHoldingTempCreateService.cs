@@ -33,9 +33,9 @@ namespace aes.Services.RacuniServices.RacuniHoldingService
             }
 
             decimal _iznos = decimal.Parse(iznos);
-            DateTime? _datumIzdavanja = datumIzdavanja != null ? DateTime.Parse(datumIzdavanja) : (DateTime?)null;
+            DateTime? _datumIzdavanja = datumIzdavanja != null ? DateTime.Parse(datumIzdavanja) : null;
 
-            RacunHolding re = new RacunHolding
+            RacunHolding re = new()
             {
                 BrojRacuna = brojRacuna,
                 Iznos = _iznos,
@@ -54,7 +54,7 @@ namespace aes.Services.RacuniServices.RacuniHoldingService
             Stan stan = null;
             if (brojRacuna.Length >= 8)
             {
-                int sifraObjekta = int.Parse(brojRacuna.Substring(0, 8));
+                int sifraObjekta = int.Parse(brojRacuna[..8]);
                 stan = await _c.UnitOfWork.Stan.FindExact(e => e.SifraObjekta == sifraObjekta);
             }
             return stan ?? await _c.UnitOfWork.Stan.FindExact(e => e.Id == 25265);

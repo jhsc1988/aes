@@ -1,5 +1,4 @@
 ﻿using aes.Services.RacuniServices.RacuniHoldingService.IService;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -18,7 +17,7 @@ namespace aes.Services.RacuniServices.RacuniHoldingService
         private readonly ILogger _logger;
 
 
-        public RacuniHoldingUploadService( IRacuniHoldingTempCreateService RacuniHoldingTempCreateService,
+        public RacuniHoldingUploadService(IRacuniHoldingTempCreateService RacuniHoldingTempCreateService,
             IUnitOfWork unitOfWork, ILogger logger)
         {
             _RacuniHoldingTempCreateService = RacuniHoldingTempCreateService;
@@ -65,7 +64,7 @@ namespace aes.Services.RacuniServices.RacuniHoldingService
                                     _ = reader.ReadLine();
                                 }
                                 line = reader.ReadLine();
-                                if (line!="ZAGREBAÄ\u008dKI HOLDING D.O.O.")
+                                if (line != "ZAGREBAÄ\u008dKI HOLDING D.O.O.")
                                 {
                                     throw new Exception("Nije račun Zagrebačkog holdinga");
                                 }
