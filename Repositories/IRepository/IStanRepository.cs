@@ -9,5 +9,7 @@ namespace aes.Repositories.IRepository
         ApplicationDbContext Context { get; }
         Task<IEnumerable<Models.Stan>> GetStanovi();
         Task<IEnumerable<Models.Stan>> GetStanoviWithoutOdsOmm();
+        Task UpdateRange(IEnumerable<Models.Stan> stanoviZaUpdate);
+
     }
 }

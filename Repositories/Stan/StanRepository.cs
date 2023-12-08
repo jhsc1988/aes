@@ -38,5 +38,12 @@ namespace aes.Repositories.Stan
                 .Where(s => !Context.Ods.Any(o => o.StanId == s.Id))
                 .ToListAsync();
         }
+
+        public async Task UpdateRange(IEnumerable<Models.Stan> stanoviZaUpdate)
+        {
+            ApplicationDbContext dbContext = _unitOfWork.Stan.Context;
+            dbContext.Stan.UpdateRange(stanoviZaUpdate);
+            _ = await dbContext.SaveChangesAsync();
+        }
     }
 }
