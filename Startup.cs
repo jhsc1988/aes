@@ -66,7 +66,6 @@ namespace aes
             // datatables
             _ = services.AddScoped<IDatatablesSearch, DatatablesSearch>();
             _ = services.AddScoped<IDatatablesGenerator, DatatablesGenerator>();
-            _ = services.AddScoped<IRacuniInlineEditorService, RacuniInlineEditorService>();
 
             // Racuni services
             _ = services.AddScoped<IRacuniHoldingService, RacuniHoldingService>();

@@ -239,13 +239,6 @@ namespace aes.Controllers.RacuniControllers
 
         [Authorize]
         [HttpPost]
-        public async Task<JsonResult> UpdateDbForInline(string id, string updatedColumn, string x)
-        {
-            return await _c.RacuniInlineEditorService.UpdateDbForInline<RacunHolding>(await _c.UnitOfWork.RacuniHolding.FindExact(e => e.Id == int.Parse(id)), updatedColumn, x);
-        }
-
-        [Authorize]
-        [HttpPost]
         public async Task<JsonResult> SaveToDB(string dopisId)
         {
             return (await _c.UnitOfWork.RacuniHolding.TempList(_c.Service.GetUid(User))).Count() is 0

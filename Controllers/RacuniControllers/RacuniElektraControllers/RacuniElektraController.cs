@@ -296,14 +296,6 @@ namespace aes.Controllers.RacuniControllers.RacuniElektraControllers
 
         [Authorize]
         [HttpPost]
-        public async Task<JsonResult> UpdateDbForInline(string id, string updatedColumn, string x)
-        {
-            return await _c.RacuniInlineEditorService.UpdateDbForInline<RacunElektra>(
-                await _c.UnitOfWork.RacuniElektra.FindExact(e => e.Id == int.Parse(id)), updatedColumn, x);
-        }
-
-        [Authorize]
-        [HttpPost]
         public async Task<JsonResult> SaveToDB(string dopisId)
         {
             if ((await _c.UnitOfWork.RacuniElektra.TempList(_c.Service.GetUid(User))).Count() is 0)

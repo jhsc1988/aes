@@ -5,7 +5,6 @@ namespace aes.Controllers.IControllers
 {
     internal interface IRacuniController
     {
-        Task<JsonResult> UpdateDbForInline(string id, string updatedColumn, string x);
         Task<JsonResult> SaveToDB(string _dopisid);
         Task<JsonResult> RemoveRow(string racunId);
         Task<JsonResult> RemoveAllFromDb();
