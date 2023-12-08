@@ -2,18 +2,18 @@
     $('#_StanTable').DataTable({
 
         // excel
-        //dom: 'frtipB',
-        //"buttons": [
-        //    {
-        //        "extend": 'excel',
-        //        "text": '<i class="button-excel">Excel</i>',
-        //        "titleAttr": 'Excel',
-        //        "action": newexportaction,
-        //        "exportOptions": {
-        //            columns: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        //        },
-        //    }
-        //],
+        dom: 'frtipB',
+        "buttons": [
+            {
+                "extend": 'excel',
+                "text": '<i class="button-excel">Excel</i>',
+                "titleAttr": 'Excel',
+                "action": newexportaction,
+                "exportOptions": {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                },
+            }
+        ],
 
         "ajax": {
             "url": "/Stanovi/GetListFiltered", // filtirana lista - lista stanova za koje ne postoje mjerna mjesta
