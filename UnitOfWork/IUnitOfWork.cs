@@ -20,8 +20,6 @@ namespace aes.UnitOfWork
         IElektraKupacRepository ElektraKupac { get; }
         IStanUpdateRepository StanUpdate { get; }
         IObracunPotrosnjeRepository ObracunPotrosnje { get; }
-        IOdsEditRepository OdsEdit { get; }
-        IElektraKupacEditRepository ElektraKupacEdit { get; }
 
         Task<int> Complete();
     }

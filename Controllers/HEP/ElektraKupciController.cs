@@ -85,23 +85,6 @@ namespace aes.Controllers.HEP
                 return NotFound();
             }
 
-            try
-            {
-                ElektraKupacEdit elektraKupacEdit = new()
-                {
-                    ElektraKupac = elektraKupac,
-                    EditingByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    EditTime = DateTime.Now,
-                };
-
-                await _c.UnitOfWork.ElektraKupacEdit.Add(elektraKupacEdit);
-                _ = await _c.UnitOfWork.Complete();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
             ViewData["OdsId"] = new SelectList(await _c.UnitOfWork.Ods.GetAll(), "Id", "Id", elektraKupac.OdsId);
             return View(elektraKupac);
         }
@@ -138,7 +121,6 @@ namespace aes.Controllers.HEP
                 }
                 finally
                 {
-                    _c.UnitOfWork.ElektraKupacEdit.RemoveRange(await _c.UnitOfWork.ElektraKupacEdit.Find(e => e.EditingByUserId.Equals(User.FindFirstValue(ClaimTypes.NameIdentifier))));
                     _ = await _c.UnitOfWork.Complete();
                 }
 
@@ -187,16 +169,10 @@ namespace aes.Controllers.HEP
         public async Task<IActionResult> UgovorniRacunValidation(long ugovorniRacun)
         {
 
-            ElektraKupacEdit elektraKupacEdit = await _c.UnitOfWork.ElektraKupacEdit.GetLastElektraKupacEdit(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             if (ugovorniRacun is < 1000000000 or > 9999999999)
             {
                 return Json($"Ugovorni račun nije ispravan");
-            }
-
-            if (elektraKupacEdit is not null && ugovorniRacun == elektraKupacEdit.ElektraKupac.UgovorniRacun)
-            {
-                return Json(true);
             }
 
             ElektraKupac db = await _c.UnitOfWork.ElektraKupac.FindExact(ugovorniRacun);

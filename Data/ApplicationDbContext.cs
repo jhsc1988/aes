@@ -17,17 +17,11 @@ namespace aes.Data
         public DbSet<Predmet> Predmet { get; set; }
         public DbSet<Dopis> Dopis { get; set; }
         public DbSet<RacunElektra> RacunElektra { get; set; }
-        public DbSet<RacunElektraEdit> RacunElektraEdit { get; set; }
         public DbSet<RacunElektraIzvrsenjeUsluge> RacunElektraIzvrsenjeUsluge { get; set; }
-        public DbSet<RacunElektraIzvrsenjeUslugeEdit> RacunElektraIzvrsenjeUslugeEdit { get; set; }
         public DbSet<RacunElektraRate> RacunElektraRate { get; set; }
-        public DbSet<RacunElektraRateEdit> RacunElektraRateEdit { get; set; }
         public DbSet<RacunHolding> RacunHolding { get; set; }
-        public DbSet<RacunHoldingEdit> RacunHoldingEdit { get; set; }
         public DbSet<StanUpdate> StanUpdate { get; set; }
         public DbSet<TarifnaStavka> TarifnaStavka { get; set; }
         public DbSet<ObracunPotrosnje> ObracunPotrosnje { get; set; }
-        public DbSet<OdsEdit> OdsEdit { get; set; }
-        public DbSet<ElektraKupacEdit> ElektraKupacEdit { get; set; }
     }
 }

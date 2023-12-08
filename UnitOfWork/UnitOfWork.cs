@@ -29,8 +29,6 @@ namespace aes.UnitOfWork
         public IDopisRepository Dopis { get; private set; }
         public IStanUpdateRepository StanUpdate { get; private set; }
         public IObracunPotrosnjeRepository ObracunPotrosnje { get; private set; }
-        public IOdsEditRepository OdsEdit { get; private set; }
-        public IElektraKupacEditRepository ElektraKupacEdit { get; private set; }
         public UnitOfWork(ApplicationDbContext context)
         {
 
@@ -46,8 +44,6 @@ namespace aes.UnitOfWork
             Dopis = new DopisRepository(_context);
             StanUpdate = new StanUpdateRepository(_context);
             ObracunPotrosnje = new ObracunPotrosnjeRepository(_context);
-            OdsEdit = new OdsEditRepository(_context);
-            ElektraKupacEdit = new ElektraKupacEditRepository(_context);
         }
 
         public async Task<int> Complete()
