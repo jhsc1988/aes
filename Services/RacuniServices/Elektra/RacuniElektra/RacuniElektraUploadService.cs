@@ -1,5 +1,4 @@
 ﻿using aes.Services.RacuniServices.Elektra.RacuniElektra.Is;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -11,18 +10,15 @@ using System.Threading.Tasks;
 
 namespace aes.Services.RacuniServices.Elektra.RacuniElektra
 {
-
     public class RacuniElektraUploadService : IRacuniElektraUploadService
     {
-        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IRacuniElektraTempCreateService _RacuniElektraTempCreateService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger _logger;
 
-        public RacuniElektraUploadService(IWebHostEnvironment webHostEnvironment, IRacuniElektraTempCreateService RacuniElektraTempCreateService,
+        public RacuniElektraUploadService(IRacuniElektraTempCreateService RacuniElektraTempCreateService,
             IUnitOfWork unitOfWork, ILogger logger)
         {
-            _webHostEnvironment = webHostEnvironment;
             _RacuniElektraTempCreateService = RacuniElektraTempCreateService;
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -31,96 +27,57 @@ namespace aes.Services.RacuniServices.Elektra.RacuniElektra
         {
             string _loggerTemplate = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.FullName + ", " + "UserId: " + userId + ", " + "msg: ";
 
-            IFormFileCollection files;
-            try
-            {
-                files = Request.Form.Files;
-            }
-            catch (Exception e)
-            {
-                _logger.Error(_loggerTemplate + e.Message);
+            IFormFileCollection files = Request.Form.Files;
 
-                return new JsonResult(new
-                {
-                    success = false,
-                    message = e.Message
-                });
-            }
+            int tempListCount = (await _unitOfWork.RacuniElektra.TempList(userId)).Count();
+
             foreach (IFormFile file in files)
             {
-                FileStream fs;
-                StreamReader reader;
-                string fileName = _webHostEnvironment.WebRootPath + $@"\Uploaded\{file.FileName}";
-
-                //if (!file.ContentType.Equals("application/vnd.ms-excel"))
-                if (!file.ContentType.Equals("text/csv"))
+                if (!file.ContentType.Equals("text/csv") || file.Length > 256000)
                 {
-                    string message = "not .csv file";
+                    string message = !file.ContentType.Equals("text/csv") ? "not .csv file" : "File too large, max 256 kb";
                     _logger.Information(_loggerTemplate + message);
-
-                    return new JsonResult(new
-                    {
-                        success = false,
-                        message
-                    });
+                    return new JsonResult(new { success = false, message });
                 }
-                if (file.Length > 256000)
-                {
-                    string message = "Too big, max 256 kb";
-                    _logger.Information(_loggerTemplate + message);
 
-                    return new JsonResult(new
-                    {
-                        success = false,
-                        message
-                    });
-                }
                 try
                 {
-                    using (fs = File.Create(fileName))
+                    using (StreamReader reader = new(file.OpenReadStream()))
                     {
-                        file.CopyTo(fs);
-                    }
-                    using (reader = new StreamReader(fileName))
-                    {
-                        double iznos = 0;
+                        if (tempListCount >= 500)
+                        {
+                            string message = "U tablicu ne može dodati više od 500 računa odjednom!";
+                            _logger.Information(_loggerTemplate + message);
+                            return new JsonResult(new { success = false, message });
+                        }
 
                         while (!reader.EndOfStream)
                         {
+                            double iznos = 0;
                             string line = reader.ReadLine();
-                            if (line.Contains("EUR"))
+
+                            if (line == "EUR")
                             {
                                 iznos = double.Parse(reader.ReadLine()) / 100;
-                                for (int i = 0; i < 3; i++) // skipping 3 lines
-                                {
-                                    _ = reader.ReadLine();
-                                }
+
+                                SkipLines(reader, 3);
+
                                 line = reader.ReadLine();
+
                                 if (!line.Contains("HEP ELEKTRA"))
                                 {
                                     throw new Exception("Nije račun HEP ELEKTRE");
                                 }
-                                for (int i = 0; i < 3; i++) // skipping 3 lines
-                                {
-                                    _ = reader.ReadLine();
-                                }
+
+                                SkipLines(reader, 3);
+
                                 line = reader.ReadLine();
                             }
-                            if (line.Contains("HR01"))
+
+                            if (line == "HR01")
                             {
-                                if ((await _unitOfWork.RacuniElektra.TempList(userId)).Count() >= 500)
-                                {
-                                    string message = "U tablici ne može biti više od 500 računa!";
-                                    _logger.Information(_loggerTemplate + message);
-
-                                    return new(new { success = false, Message = message });
-                                }
-
                                 _ = await _RacuniElektraTempCreateService.AddNewTemp(reader.ReadLine(), iznos.ToString(), null, userId);
-                                for (int i = 0; i < 4; i++) // skipping 4 lines
-                                {
-                                    _ = reader.ReadLine();
-                                }
+                                SkipLines(reader, 4);
                             }
                         }
                     };
@@ -128,29 +85,19 @@ namespace aes.Services.RacuniServices.Elektra.RacuniElektra
                 catch (Exception e)
                 {
                     _logger.Error(_loggerTemplate + e.Message);
-
-                    return new JsonResult(new
-                    {
-                        success = false,
-                        message = e.Message
-                    });
+                    return new JsonResult(new { success = false, message = e.Message });
                 }
-                finally
-                {
-                    File.Delete(fileName);
-                }
-
             }
 
-            {
-                string message = "Uspješno uploadano";
-                _logger.Information(_loggerTemplate + message);
+            _logger.Information(_loggerTemplate + "Uspješno uploadano");
+            return new JsonResult(new { success = true, message = "Uspješno uploadano" });
 
-                return new JsonResult(new
-                {
-                    success = true,
-                    message
-                });
+        }
+        private static void SkipLines(StreamReader reader, int numberOfLines)
+        {
+            for (int i = 0; i < numberOfLines; i++)
+            {
+                _ = reader.ReadLine();
             }
         }
     }

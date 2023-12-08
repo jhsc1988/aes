@@ -1,4 +1,5 @@
 ﻿using aes.CommonDependecies.ICommonDependencies;
+using aes.Models;
 using aes.Models.Racuni.Holding;
 using aes.Services.RacuniServices.RacuniHoldingService.IService;
 using Microsoft.AspNetCore.Mvc;
@@ -20,47 +21,43 @@ namespace aes.Services.RacuniServices.RacuniHoldingService
 
         public async Task<JsonResult> AddNewTemp(string brojRacuna, string iznos, string datumIzdavanja, string userId)
         {
-
             if (iznos == null)
             {
-                return new(new { success = false, Message = "iznos ne smije biti prazan!" });
+                return new JsonResult(new { success = false, Message = "Iznos ne smije biti prazan!" });
             }
-            if ((await _c.UnitOfWork.RacuniHolding.TempList(userId)).Count() >= 500)
+
+            IEnumerable<RacunHolding> tempList = await _c.UnitOfWork.RacuniHolding.TempList(userId);
+            if (tempList.Count() >= 500)
             {
-                return new(new { success = false, Message = "U tablici ne može biti više od 500 računa!" });
+                return new JsonResult(new { success = false, Message = "U tablici ne može biti više od 500 računa!" });
             }
 
             decimal _iznos = decimal.Parse(iznos);
-            DateTime? _datumIzdavanja = datumIzdavanja is not null ? DateTime.Parse(datumIzdavanja) : null;
+            DateTime? _datumIzdavanja = datumIzdavanja != null ? DateTime.Parse(datumIzdavanja) : (DateTime?)null;
 
-            RacunHolding re = new()
+            RacunHolding re = new RacunHolding
             {
                 BrojRacuna = brojRacuna,
                 Iznos = _iznos,
                 DatumIzdavanja = _datumIzdavanja,
                 CreatedByUserId = userId,
                 IsItTemp = true,
+                Stan = await FindStanAsync(brojRacuna)
             };
 
-            if (re.BrojRacuna.Length >= 8)
-            {
-                re.Stan = await _c.UnitOfWork.Stan.FindExact(e => e.SifraObjekta == int.Parse(re.BrojRacuna.Substring(0, 8)));
-                re.Stan ??= await _c.UnitOfWork.Stan.FindExact(e => e.Id == 25265);
-            }
-            else
-            {
-                re.Stan = await _c.UnitOfWork.Stan.FindExact(e => e.Id == 25265);
-            }
-
-            IEnumerable<RacunHolding> tempRacuni = (await _c.UnitOfWork.RacuniHolding.TempList(userId)).Append(re);
-
-            int rbr = 1;
-            foreach (RacunHolding e in tempRacuni)
-            {
-                e.RedniBroj = rbr++;
-            }
             await _c.UnitOfWork.RacuniHolding.Add(re);
             return await _c.Service.TrySave(false);
+        }
+
+        private async Task<Stan> FindStanAsync(string brojRacuna)
+        {
+            Stan stan = null;
+            if (brojRacuna.Length >= 8)
+            {
+                int sifraObjekta = int.Parse(brojRacuna.Substring(0, 8));
+                stan = await _c.UnitOfWork.Stan.FindExact(e => e.SifraObjekta == sifraObjekta);
+            }
+            return stan ?? await _c.UnitOfWork.Stan.FindExact(e => e.Id == 25265);
         }
 
         public async Task<int> CheckTempTableForRacuniWithouCustomer(string userId)
@@ -90,6 +87,7 @@ namespace aes.Services.RacuniServices.RacuniHoldingService
                     e.Stan ??= await _c.UnitOfWork.Stan.FindExact(e => e.Id == 25265);
                 }
             }
+
             await RacuniElektraNotesBuild(userId, tempRacuni);
             return new(new { success = true, Message = "Podaci su osvježeni" });
         }
