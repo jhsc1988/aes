@@ -19,6 +19,7 @@ namespace aes.Services.RacuniServices.RacuniHoldingService
             _c = c;
         }
 
+        // TODO: optimize upload service
         public async Task<JsonResult> AddNewTemp(string brojRacuna, string iznos, string datumIzdavanja, string userId)
         {
             if (iznos == null)
