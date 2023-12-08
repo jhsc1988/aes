@@ -59,6 +59,10 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="UploadedFiles\RacuniElektraIzvrsenjePdf\" />
+    <Folder Include="UploadedFiles\RacuniHoldingPdf\" />
+    <Folder Include="UploadedFiles\RacuniElektraRatePdf\" />
+    <Folder Include="UploadedFiles\RacuniElektraPdf\" />
     <Folder Include="wwwroot\Uploaded\" />
   </ItemGroup>
 
