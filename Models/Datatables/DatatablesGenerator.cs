@@ -12,11 +12,9 @@ namespace aes.Models.Datatables
         {
             IFormCollection form = request.Form;
 
-            string startStr = form["start"].FirstOrDefault();
-            string lengthStr = form["length"].FirstOrDefault();
-            string sortColumnIndex = form["order[0][column]"].FirstOrDefault();
-
-            if (int.TryParse(startStr, out int start) && int.TryParse(lengthStr, out int length))
+            if (int.TryParse(form["start"].FirstOrDefault(), out int start) &&
+                int.TryParse(form["length"].FirstOrDefault(), out int length) &&
+                int.TryParse(form["order[0][column]"].FirstOrDefault(), out int sortColumnIndex))
             {
                 return new DtParams
                 {
@@ -28,27 +26,50 @@ namespace aes.Models.Datatables
                 };
             }
 
-            // You could throw an exception here or handle this case appropriately.
+            // Handle invalid input gracefully, e.g., log and return a default value.
+            // You can also throw an exception if appropriate for your application.
             return null;
         }
 
-        public JsonResult SortingPaging<T>(IEnumerable<T> data, DtParams Params, HttpRequest request, int totalRows,
-            int totalRowsAfterFiltering)
+        public JsonResult SortingPaging<T>(IEnumerable<T> data, DtParams Params, HttpRequest request, int totalRows, int totalRowsAfterFiltering)
         {
-            IQueryable<T> queryableData = data as IQueryable<T> ?? data.AsQueryable();
+            IQueryable<T> queryableData = data.AsQueryable();
 
-            IOrderedQueryable<T> sortedData = queryableData.OrderBy($"{Params.SortColumnName} {Params.SortDirection}");
-            IQueryable<T> pagedData = sortedData.Skip(Params.Start).Take(Params.Length);
+            IOrderedQueryable<T> sortedData = ApplySorting(queryableData, Params);
+            IQueryable<T> pagedData = ApplyPaging(sortedData, Params);
 
             int draw = int.TryParse(request.Form["draw"].FirstOrDefault(), out int drawInt) ? drawInt : 0;
 
+            // Consider if you can avoid materializing the entire list here
+            List<T> dataList = pagedData.ToList();
+
             return new JsonResult(new
             {
-                data = pagedData,
+                data = dataList,
                 draw,
                 recordsTotal = totalRows,
                 recordsFiltered = totalRowsAfterFiltering
             });
         }
+
+
+        private static IOrderedQueryable<T> ApplySorting<T>(IQueryable<T> data, DtParams Params)
+        {
+            if (!string.IsNullOrEmpty(Params.SortColumnName))
+            {
+                string sortExpression = $"{Params.SortColumnName} {Params.SortDirection}";
+                return data.OrderBy(sortExpression);
+            }
+
+            // If no sorting is specified, return the data as is.
+            return data.OrderBy(e => 0); // Order by a constant to avoid errors.
+        }
+
+
+        private static IQueryable<T> ApplyPaging<T>(IQueryable<T> data, DtParams Params)
+        {
+            return data.Skip(Params.Start).Take(Params.Length);
+        }
     }
+
 }

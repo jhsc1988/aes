@@ -8,6 +8,7 @@ namespace aes.Services.IServices
 {
     public interface IDatatablesService<TEntity> where TEntity : class
     {
-        JsonResult GetData(HttpRequest Request, IEnumerable<TEntity> list, IDatatablesGenerator datatablesGenerator, Func<IEnumerable<TEntity>, DtParams, IEnumerable<TEntity>> dtData);
+        public JsonResult GetData(HttpRequest request, IEnumerable<TEntity> list,
+            IDatatablesGenerator datatablesGenerator, Func<IEnumerable<TEntity>, DtParams, IEnumerable<TEntity>> dtData);
     }
 }

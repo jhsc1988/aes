@@ -15,20 +15,22 @@ namespace aes.Services
         {
             DtParams dTParams = datatablesGenerator.GetParams(request);
 
-            IList<TEntity> dataList = list as IList<TEntity> ?? list.ToList();
+            IEnumerable<TEntity> dataList = list;
 
-            int totalRows = dataList.Count;
-
-            if (string.IsNullOrEmpty(dTParams.SearchValue))
+            if (!string.IsNullOrEmpty(dTParams.SearchValue))
             {
-                return datatablesGenerator.SortingPaging(dataList, dTParams, request, totalRows, totalRows);
+                dataList = dtData(dataList, dTParams);
             }
 
-            List<TEntity> filteredData = dtData(dataList, dTParams).ToList();
-            int filteredRows = filteredData.Count;
+            List<TEntity> dataListForPaging = dataList.ToList();
+            int filteredRows = dataListForPaging.Count;
 
-            return datatablesGenerator.SortingPaging(filteredData, dTParams, request, totalRows, filteredRows);
+            int totalRows = string.IsNullOrEmpty(dTParams.SearchValue) ? list.Count() : filteredRows;
+
+            return datatablesGenerator.SortingPaging(dataListForPaging, dTParams, request, totalRows, filteredRows);
         }
 
     }
+
+
 }

@@ -197,7 +197,7 @@ namespace aes.Controllers.HEP
         {
             IEnumerable<Ods> list = await _c.UnitOfWork.Ods.GetAllOds();
 
-            return new DatatablesService<Ods>().GetData(Request, list,
+            return new DatatablesService<Ods>().GetData(Request, list.ToList(),
                 _c.DatatablesGenerator, _c.DatatablesSearch.GetStanoviOdsForDatatables);
         }
     }
